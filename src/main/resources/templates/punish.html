@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>罚单</title>
+
+    <style>
+        .fine-receipt {
+            margin-top: 50px;
+        }
+        .fine-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .fine-section {
+            margin-bottom: 15px;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="container fine-receipt">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title fine-header">罚款单</h3>
+        </div>
+        <div class="panel-body">
+
+            <div class="fine-section">
+                <h4>读者信息</h4>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p><strong>姓名：</strong>[[${punish_data.record.reader.name}]]</p>
+                        <p><strong>学院：</strong>[[${punish_data.record.reader.college}]]</p>
+                        <p><strong>专业：</strong>[[${punish_data.record.reader.major}]]</p>
+                        <p><strong>年级：</strong>[[${punish_data.record.reader.grade}]]</p>
+
+                    </div>
+                    <div class="col-sm-6">
+                        <p><strong>学生号：</strong>[[${punish_data.record.reader.studentId}]]</p>
+                        <p><strong>电话：</strong>[[${punish_data.record.reader.phone}]]</p>
+                        <p><strong>是否毕业：</strong>
+                        [[${punish_data.record.reader.graduation} ? '是' : '否']]
+                        </p>
+                        <p><strong>创建时间：</strong>[[${#dates.format(punish_data.record.reader.createTime, 'yyyy-MM-dd')}]]</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="fine-section">
+                <h4>图书信息</h4>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p><strong>图书ID：</strong>[[${punish_data.record.book.id}]]</p>
+                        <p><strong>ISBN：</strong>[[${punish_data.record.book.isbn}]]</p>
+                        <p><strong>封面：</strong>
+                        <img th:src="'/' + ${punish_data.record.book.cover}"  alt="封面" style="width: 100px; height: auto;"></p>
+                        <p><strong>书名：</strong>[[${punish_data.record.book.title}]]</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><strong>作者：</strong>[[${punish_data.record.book.author}]]</p>
+                        <p><strong>出版社：</strong>[[${punish_data.record.book.publisher}]]</p>
+                        <p><strong>价格：</strong>￥[[${punish_data.record.book.price}]]</p>
+                        <p><strong>出版日期：</strong>[[${punish_data.record.book.publishDate}]]</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fine-section">
+                <h4>借阅记录</h4>
+                <div class="row">
+                    <div class="col-sm-6">
+
+                        <p><strong>借阅日期：</strong>[[${#dates.format(punish_data.record.createTime, 'yyyy-MM-dd')}]]</p>
+                        <p><strong>应还日期：</strong>[[${punish_data.record.returnDate}]]</p>
+                        <p><strong>是否归还：</strong>[[${punish_data.record.isReturn} ? '是' : '否']]</p>
+                        <p><strong>实际还书日期：</strong>[[${#dates.format(punish_data.record.actualReturnDate, 'yyyy-MM-dd')}]]</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><strong>罚款原因：</strong>[[${punish_data.reason}]]</p>
+                        <p><strong>罚款金额：</strong>
+                        <h3 style="color: red">[[${punish_data.money}]]￥</h3>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="fine-footer" style="float: right">
+                <h6>一切解释权归我所有</h6>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title></title>
+
+    <style>
+        .bookimg{
+            max-width: 135px;
+            max-height: 200px;
+        }
+        .pl{
+            font-size: 13px;
+
+            color: rgba(186,185,185,1   );
+        }
+
+        #info span{
+
+            margin-top : 20px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<nav th:replace="header :: header"></nav>
+<div class="panel panel-default" style="margin-top: 0px">
+    <div class="panel-heading">图书简介</div>
+    <div class="panel-body" style="background-color: #f6f6f1">
+        <div class="container-fluid">
+            <div class="row panel">
+                <div class="col-sm-2">
+                    <img th:src="'/' + ${book.cover}" class="bookimg">
+
+
+                </div>
+                <div class="col-sm-2" style="margin-left: -100px;">
+                    <div id="info">
+                        <span>
+                            <span class="pl">书名 </span>: <span th:text="${book.title}"></span>
+                        </span><br>
+                        <span class="pl"> 作者</span>:<span th:text="${book.author}"></span><br>
+                        <span class="pl">出版社:</span> <span th:text="${book.publisher}"></span><br>
+                        <span class="pl">出版年:</span><sapn th:text="${book.publishDate}"></sapn><br>
+                        <span class="pl">定价:</span> <span th:text="${book.price}"></span><br>
+                        <span class="pl">ISBN:</span><span th:text="${book.isbn}"></span><br>
+                        <hr/>
+                    </div>
+                </div>
+                <div class="col-sm-8"></div>
+            </div>
+            <div class="row panel">
+                <div class="panel-heading">简介</div>
+                <div class="panel-body" th:utext="${book.description}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:replace="header :: searchscript"></script>
+</body>
+</html>

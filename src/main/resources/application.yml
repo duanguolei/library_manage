@@ -1,0 +1,45 @@
+spring:
+  web:
+    resources:
+      static-locations: file:D:\javaproject\manage\src\main\resources\static
+  devtools:
+    restart:
+      enabled: true
+      exclude: static
+
+  application:
+    name: manage
+
+  datasource:
+    password: 123456
+    username: root
+    url: jdbc:mysql://127.0.0.1:3306/library_manage_springboot?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    driver-class-name: com.mysql.jdbc.Driver
+
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  sql:
+    init:
+      encoding: utf-8
+      mode: always
+
+
+
+mybatis-plus:
+  type-aliases-package: com.library.manage
+  mapper-locations: classpath:/mappers/*.xml
+
+server:
+  port: 8890
+
+
+

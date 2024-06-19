@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>Login</title>
+
+
+    <style>
+        .error-msg {
+            color: red;
+            position: absolute;
+            font-size: 13px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .account {
+            width: 400px;
+            margin-top: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #f0f0f0;
+            padding: 10px 30px 30px 30px;
+            -webkit-box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+            box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+
+        }
+
+        .account .title {
+            font-size: 25px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .account .form-group {
+            margin-bottom: 20px;
+        }
+
+
+    </style>
+
+</head>
+
+<body>
+
+
+<nav th:replace="header :: header"></nav>
+
+<div class="account" style="margin-top: 10%; background-color: #f6f6f1;">
+    <div class="title">注册</div>
+    <div class="form">
+        <form id="loginfrom" method="post" action="/register">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="repassword">RePassword</label>
+                <input type="password" class="form-control" id="repassword" name="repassword" required>
+            </div>
+
+            <input type="submit" id="registerbtn" class="btn btn-primary btn-block" value="注册"></input>
+
+
+        </form>
+
+        <hr/>
+        <div class="error-msg" id="msg">
+            <span th:if="${error}" th:text="${error}"></span>
+            <span th:if="${msg}" th:text="${msg}"></span>
+
+        </div>
+
+
+        <hr/>
+        <div style="float: right">
+            <a href="/login">已有账号？去登录</a>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+
+</body>
+</html>

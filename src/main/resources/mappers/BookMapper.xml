@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.library.manage.dao.BookMapper">
+
+    <insert id="inertBook" parameterType="Book">
+        INSERT INTO book ( category_id, isbn,  title, author, description, publisher, price, publish_date, status, is_delete,create_time,borrow_count)
+        VALUES ( #{category.id}, #{isbn}, #{title}, #{author}, #{description}, #{publisher}, #{price}, #{publishDate}, #{status}, #{isDelete},#{createTime},#{borrowCount})
+    </insert>
+    <update id="updatebook" parameterType="Book">
+    UPDATE book
+    SET
+        category_id = #{category.id},
+        isbn = #{isbn},
+        title = #{title},
+        author = #{author},
+        description = #{description},
+        publisher = #{publisher},
+        price = #{price},
+        publish_date = #{publishDate},
+        status = #{status},
+        is_delete = #{isDelete},
+        create_time = #{createTime},
+        borrow_count = #{borrowCount}
+    WHERE id = #{id}
+</update>
+    <select id="getTopBooklist" resultType="com.library.manage.entity.Book">
+        select * from book
+        ORDER BY borrow_count DESC
+        limit #{n}
+    </select>
+</mapper>

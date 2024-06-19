@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>
+        图书
+    </title>
+
+
+    <style>
+        .bookimg{
+            width: 60px;
+            height: 100px ;
+
+        }
+
+        #book_tabel td {
+            width: 250px;
+            padding: 10px;
+            text-align: center;
+            vertical-align: top;
+        }
+        table, th, td {
+            border: 1px dashed #ccc;
+        }
+        .bookimg:hover{
+            transform: scale(1.1);
+        }
+    </style>
+
+</head>
+
+<body id="app">
+<nav th:replace="header :: header"></nav>
+
+<div class="panel panel-default">
+    <div class="panel-heading">图书管理</div>
+    <div class="panel-body">
+        <a class="btn btn-success btn-sm" data-toggle="modal" data-target="#addModal" >新建图书</a>
+        <table id="book_table">
+
+        </table>
+
+    </div>
+</div>
+
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">新建图书</h4>
+            </div>
+            <div class="modal-body">
+                <form id="addform">
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">书名</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+
+                    <!-- 序列号 -->
+                    <div class="mb-3">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="isbn" name="isbn" >
+                    </div>
+
+                    <div class="mb-3">
+                        <label  class="form-label">类别</label>
+<!--                        <label for="category" class="form-label">类别</label>-->
+<!--                        <select class="form-control" id="category" name="category" required>-->
+<!--                            <option value=-1>请选择类别</option>-->
+<!--                            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" ></option>-->
+<!--                        </select>-->
+
+                        <select class="form-control hide" name="category">
+                            <option id="add_category" value="" selected></option>
+                        </select>
+                    <div class="mb-3">
+                        <el-cascader
+                                v-model="cascader"
+                                :options="options"
+                                placeholder="请选择类别"
+                                @change="handleCascaderChange"
+                        ></el-cascader>
+                    </div>
+                    </div>
+
+                    <!-- 作者 -->
+                    <div class="mb-3">
+                        <label for="author" class="form-label">作者</label>
+                        <input type="text" class="form-control" id="author" name="author" >
+                    </div>
+                    <!-- 内容摘要 -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">内容介绍</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" ></textarea>
+                    </div>
+                    <!-- 出版社 -->
+                    <div class="mb-3">
+                        <label for="publisher" class="form-label">出版社</label>
+                        <input type="text" class="form-control" id="publisher" name="publisher" >
+                    </div>
+                    <!-- 价格 -->
+                    <div class="mb-3">
+                        <label for="price" class="form-label">价格</label>
+                        <input type="number" step="0.1" class="form-control" id="price" name="price" min="0" >
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="publishdate" class="form-label">出版日期</label>
+                        <input type="date" class="form-control" id="publishdate" name="publishdate" >
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <div class="btn btn-primary" id="addbtn">提交</div>
+                    </div>
+                    <div class="error" id="error-msg">
+
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">上传图书封面</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <div class="input-group custom-input-group">
+                            <input type="file" class="form-control" placeholder="上传封面" id="uploadimg">
+                        </div>
+                    </div>
+                    <div class="btn btn-primary" id="imagebtn"> <i class="fa fa-upload" aria-hidden="true"></i>上传封面 </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width: 80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">借书</h4>
+            </div>
+            <div class="modal-body">
+
+                <form id="" class="form-horizontal">
+                    <div class="from-group">
+                        <input type="text" class="form-control" id="readersearch" name="search" placeholder="请输入读者姓名|学号|手机号|身份证号">
+                    </div>
+                    <hr/>
+                    <div class="btn btn-primary right" id="searchbtn">点击搜索</div>
+                    <div class="msg" id="msg"></div>
+                </form>
+                <div class="form-group"> <label>选择借用时间:</label><input type="date" value="" id="return_date" placeholder="选择借用到期时间"></div>
+                <table class="table table-bordered table-hover" id="search_table">
+                    <tbody  id="reader_tbody"></tbody>
+                </table>
+
+                <div style="font-size: 20px;color: red" id="borw_msg">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="serach_borwer_Modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width: 80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">借阅情况</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>姓名</th>
+                    <th>学生号</th>
+                    <th>借阅时间</th>
+                    <th>预定归还时间</th>
+                    <th>归还时间</th>
+                    <th>是否逾期</th>
+                    <th>是否归还</th>
+
+                    </thead>
+                    <tbody id="record_tbody">
+
+                    </tbody>
+                </table>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div class="modal fade" id="update_Modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width: 80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">更新</h4>
+            </div>
+            <div class="modal-body">
+                <form id="updateform" class="form-horizontal">
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">书名</label>
+                        <input type="text" class="form-control"  name="title" required>
+                    </div>
+
+                    <!-- 序列号 -->
+                    <div class="mb-3">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control"  name="isbn" >
+                    </div>
+
+                    <div class="mb-3">
+<!--                        <label for="category" class="form-label">类别</label>-->
+<!--                        <select class="form-control" name="category" required>-->
+<!--                            <option value="">请选择类别</option>-->
+<!--                            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" ></option>-->
+<!--                        </select>-->
+
+                        <select class="form-control hide"  name="category">
+                            <option id="update_category" value="" selected></option>
+                        </select>
+                        <div class="mb-3">
+                            <el-cascader
+                                    v-model="cascader"
+                                    :options="options"
+                                    placeholder="请选择类别"
+                                    @change="handleCascaderChange"
+                            ></el-cascader>
+                        </div>
+
+                    </div>
+
+                    <!-- 作者 -->
+                    <div class="mb-3">
+                        <label for="author" class="form-label">作者</label>
+                        <input type="text" class="form-control" name="author" >
+                    </div>
+                    <!-- 内容摘要 -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">内容介绍</label>
+                        <textarea class="form-control"  name="description" rows="3" ></textarea>
+                    </div>
+                    <!-- 出版社 -->
+                    <div class="mb-3">
+                        <label for="publisher" class="form-label">出版社</label>
+                        <input type="text" class="form-control"  name="publisher" >
+                    </div>
+                    <!-- 价格 -->
+                    <div class="mb-3">
+                        <label for="price" class="form-label">价格</label>
+                        <input type="number" step="0.1" class="form-control"  name="price" min="0" >
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="publishdate" class="form-label">出版日期</label>
+                        <input type="date" class="form-control" name="publishdate" >
+                    </div>
+
+                </form>
+                <div class="error" id="update_error_msg">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="update_btn">更新</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<script>
+    $(document).ready(function() {
+        uploadavatar();
+        bindClickSubmit();
+        inittablebooklist();
+        initserachreader();
+        initupdatebook();
+
+
+    });
+    var bookid;
+
+
+    function initupdatebook() {
+        $("#update_btn").click(
+            function(){
+
+                url='book_update?id='+bookid;
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: $('#updateform').serialize(),
+                    dataType: "JSON",
+                    success: function(res) {
+                        if (res['status']) {
+                            location.reload()
+                        } else {
+                            alert(res)
+
+                        }
+                    },
+
+                });
+            }
+        )
+
+    }
+
+
+    function   initreaderbybook() {
+        var url="/record?book_id="+bookid;
+        var record_tbody=$("#record_tbody")
+        record_tbody.empty();
+        $.ajax({
+            url:url,
+            type:"POST",
+            dataType:"JSON",
+            success:function(res){
+                if(res.status){
+                    data=res.data;
+                    if(data){
+                        var html="";
+                        for(var i=0;i<data.length;i++){
+                            html+="<tr>";
+                            html+="<td>"+data[i].reader.name+"</td>";
+                            html+="<td>"+data[i].reader.studentId+"</td>";
+                            html+="<td>"+formatDate(data[i].createTime)+"</td>";
+                            html+="<td>"+data[i].returnDate+"</td>";
+                            html+="<td>"+formatDate(data[i].actualReturnDate)+"</td>";
+                            var overdue=data[i].overdue
+                            if(overdue) {
+                                html += '<td><span class="label label-danger">已逾期</span></td>';
+                            }
+                            else {
+                                html += '<td><span class="label label-primary">未逾期</span></td>';
+                            }
+                            var ifreturn=data[i].return;
+                            if(ifreturn){
+                                html += '<td><span class="label label-success">已归还</span></td>';
+                            }
+                            else {
+                                html += '<td><span class="label label-info">未归还</span></td>';
+                            }
+                            html+="</tr>";
+
+                        }
+                        record_tbody.html(html);
+                    }
+
+                }
+
+
+                else {
+                    alert(res.msg)
+                }
+            }
+        });
+
+    }
+
+    function handlerecorBtnClick() {
+
+        var btn = $(this);
+        var dataId = btn.data().reader_id;
+        var retrun_date=$("#return_date").val();
+        $("#borw_msg").empty()
+        if(retrun_date) {
+            var url = '/book_borrow?bookid=' + bookid + '&readerid=' + dataId + "&return_date=" + retrun_date;
+            $.ajax({
+                url: url,
+                method: 'POST',
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        // alert(res.msg);
+                        $("#borw_msg").html(res.msg)
+                    }
+                    else {
+                        // alert(res.mag)
+                        $("#borw_msg").html(res.msg)
+                    }
+                }
+            });
+        }
+        else {
+            alert("输入还书日期");
+        }
+    }
+
+
+    function initserachreader() {
+        $("#searchbtn").click(function () {
+            var tbody=$("#reader_tbody");
+            tbody.empty();
+            $("#msg").empty();
+            var keyword=$("#readersearch").val();
+            var BtnIds=[];
+            if(keyword){
+                $.ajax({
+                    url: "/reader",
+                    type: "POST",
+                    data: {keyword:keyword},
+                    dataType: "JSON",
+                    success: function(res) {
+                        if (res['status']) {
+
+                            data=res.data;
+                            if(data){
+                                var html="";
+
+                                for(var i=0;i<data.length;i++){
+                                    html+="<tr>"
+                                    html+="<td>"+data[i].id+"</td>"
+                                    html+="<td>"+data[i].name+"</td>"
+                                    html+="<td>"+data[i].studentId+"</td>"
+                                    html+="<td>"+data[i].cardId+"</td>"
+                                    html+="<td>"+data[i].phone+"</td>"
+                                    html+="<td>"+data[i].major+"</td>"
+                                    html+="<td>"+data[i].college+"</td>"
+                                    var valid =data[i].valid;
+
+                                    if(valid){
+                                        html+="<td><div class='btn btn-success' id='borrowbtn" + data[i].id +"' data-reader_id='"+data[i].id+"'>借书</div></td>"
+                                        BtnIds.push("#borrowbtn"+data[i].id)
+
+                                    }
+                                    else {
+                                        html+="<td><div class='btn btn-danger' id='borrowbtn' disabled>禁借</div></td>"
+                                    }
+
+                                    html+="</tr>"
+                                }
+
+                                tbody.html(html);
+                            }
+
+
+
+                        }
+                        else{
+                            $("#msg").html("<p>读者相关信息搜索不到!!!</p><a href='/reader'>去注册读者?</a>");
+
+                        }
+                        // alert(BtnIds);
+                        BtnIds.forEach(function(BtnId){
+                            $(BtnId).click(handlerecorBtnClick);
+                        })
+
+                    }
+                })
+            }
+
+
+        })}
+    function uploadavatar() {
+        $("#imagebtn").click(function() {
+            var formData = new FormData();
+            var files = $('#uploadimg')[0].files;
+            if (files.length > 0) {
+                formData.append('image', files[0]);
+                formData.append(
+                    'bookid',bookid
+                );
+
+                $.ajax({
+                    url: "/book_cover",
+                    type: "POST",
+                    data: formData,
+                    dataType: "JSON",
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+
+                        if (res['status']) {
+                            location.reload();
+                        } else {
+                            alert('上传错误');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('上传错误');
+                    }
+                });
+            } else {
+                error.text('请选择要上传的图片');
+            }
+        });
+
+    }
+    function bindClickSubmit() {
+        $("#addbtn").click(function() {
+
+            $.ajax({
+                url: "/book_add",
+                type: "POST",
+                data: $('#addform').serialize(),
+                dataType: "JSON",
+                success: function(res) {
+                    if (res['status']) {
+                        location.reload()
+                    } else {
+                        alert(res)
+
+                    }
+                },
+
+            });
+        });
+
+    }
+    // 格式化日期函数
+    function formatDate(isoDateString) {
+        if(isoDateString){
+            var date=new Date(isoDateString);
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            var houer=String(date.getHours()).padStart(2,'0');
+            var min=String(date.getMinutes()).padStart(2,'0');
+
+            return year + '-' + month + '-' + day + " " +houer+":"+min;}
+        else {
+            return ''
+        }
+    }
+
+    function inittablebooklist() {
+        url=window.document.location.href;
+
+        window.operateEvents = {
+            "click #status_btn":function (e,value,row,index) {
+                bookid=row.id;
+                initreaderbybook();
+            },
+            "click #status_reader_btn":function (e,value,row,index) {
+                bookid=row.id;
+            },
+            "click #uploadtn":function (e,value,row,index) {
+                // document.getElementById("#imgbtn").data.bookid=row.id;
+                // $("#imagebtn").data.bookid=row.id;
+                bookid=row.id;
+                // alert(bookid);
+
+            },
+            "click #update_book":function (e,value,row,index) {
+                // 创建表单
+                bookid=row.id;
+                $.each(row, function(key, value) {
+                    var input = $('#updateform [name=' + key + ']');
+                    if (input.is("input, textarea,number")) {
+                        input.val(value);
+                    }
+                });
+
+            },
+
+            "click #delete_status_btn":function (e,value,row,index) {
+                url="/book_active?id="+row.id;
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    success: function(res) {
+                        if (res['status']) {
+                            location.reload()
+                        } else {
+                            alert(res)
+
+                        }
+                    },
+
+                });
+
+            },
+
+
+            // 当点击 class=delete 时触发
+            "click .delete": function (e,value,row,index) {
+                result=confirm("是否确认删除?")
+                if(result){
+                    var id=row.id;
+                    $.ajax({
+                        url: "/book_delete",
+                        type: "POST",
+                        data: {id:id},
+                        dataType: "JSON",
+                        success: function(res) {
+                            if (res['status']) {
+                                location.reload();
+                            } else {
+                                alert(res.data)
+                            }
+                        },
+
+                    });
+                }},
+
+        };
+
+        $('#book_table').bootstrapTable({
+            url: url,         //请求后台的 URL（*）
+            method: 'post',                      //请求方式（*）
+
+            toolbar: '#toolbar',                //工具按钮用哪个容器
+            sidePagination:'client',//server:服务器端分页|client：前端分页
+            responseHandler: function (res) {
+                // 处理响应数据格式
+                return {
+                    rows: res.bookList // 数据行
+                };
+            },
+
+            striped: true,                      //是否显示行间隔色
+            cache: true,                       //是否使用缓存，默认为 true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: false,                    //是否启用排序
+            sortOrder: "desc",                   //排序方式
+
+            pageNumber:1,                       //初始化加载第一页，默认第一页
+            pageSize: 20,                        //每页的记录行数（*）
+            pageList: [20],        //可供选择的每页的行数（*）
+            search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以个人感觉意义不大
+            strictSearch: true,                 //启用严格搜索。禁用比较检查。
+            showColumns: true,                  //是否显示所有的列
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            height: 700,                        //行高，如果没有设置 height 属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            showExport: true,                   //是否显示导出
+            exportDataType: "basic",            //basic', 'all', 'selected'.
+            columns: [{
+                checkbox: true     //复选框标题，就是我们看到可以通过复选框选择整行。
+            },
+                {
+                    field: 'id',
+                    title: 'ID',
+
+                },
+                {
+                    field: 'cover',
+                    title: "封面",
+                    align: 'center',
+                    events: operateEvents,
+                    formatter: function(value, row, index) {
+                        var image = '<img src="/' + row.cover + '" alt="Book Cover" class="bookimg"><a href="/' + row.cover + '" target="_blank"></img>';
+                        return image;
+                    }
+                },
+                {
+                    field: 'title',
+                    title: '图书名称',
+                    formatter: function(value, row, index) {
+                        return '<a target="_blank" href="/book_detail/' + row.id + '">' + value + '</a>'
+                    }
+                },
+                {
+                    field: 'author',
+                    title: '作者'
+                },
+                {
+                    field: 'isbn',
+                    title: 'ISBN'
+                },
+                {
+                    field: 'category.name',
+                    title: '标签'
+                },
+                {
+                    field: 'price',
+                    title: '价格'
+                },
+                {
+                    field: 'publisher',
+                    title: '出版社'
+                },
+                {
+                    field: 'borrowCount',
+                    title: "被借阅次数"
+
+                },
+                {
+                    field: 'publishDate',
+                    title: '出版时间',
+
+                },
+                {
+                    field: "createTime",
+                    title: "入库时间",
+                    formatter:function ( value,row,index) {
+                        return formatDate(row.createTime);
+
+                    }
+                },
+                {
+                    field: 'Button',title:"是否注销",align: 'center',events: operateEvents,formatter:function(value,row,index){
+                        if(row.delete){
+                            var del = '<button type="button"  class="btn btn-info" style="margin: 5px" id="delete_status_btn">激活</button>'
+                        }
+                        else {
+                            var del = '<button type="button"  class="btn btn-danger" style="margin: 5px" id="delete_status_btn">注销</button>'
+                        }
+
+                        return [del]
+                    }
+                },
+                {
+                    field: 'Button2',title:"状态",align: 'center',events: operateEvents,formatter:function(value,row,index){
+
+                        if(row.status){
+                            var btn='<button type="button" id="status_btn"  class="btn btn-success" style="margin: 5px" data-toggle="modal" data-target="#infoModal" id="status_btn">在馆</button>'
+                        }
+                        else {
+                            var btn='<button type="button"  id="status_btn" class="btn btn-default" style="margin: 5px" data-toggle="modal" data-target="#serach_borwer_Modal" id="status_reader_btn">已借出</button>'
+                        }
+
+                        return [btn]
+                    }
+                },
+
+                {
+                    field: 'Button3',title:"操作",align: 'center',events: operateEvents,formatter:function(value,row,index){
+
+                        var search = '<div type="button" class="btn btn-info search" style="margin: 5px"><a href="/book_detail/' + row.id+ '" >详情'+ '</a></div>'
+                        var upload='<button type="button" class="btn btn-default upload" id="uploadtn" style="margin: 5px" data-toggle="modal" data-target="#uploadModal">上传封面</button>'
+                        var del = '<button type="button"  class="btn btn-warning delete" style="margin: 5px" id="delete_book">删除</button>'
+                        var update = '<button type="button"  class="btn btn-primary" style="margin: 5px" id="update_book" data-toggle="modal" data-target="#update_Modal">更新</button>'
+                        return [del,search,upload,update].join('')
+                    }
+                }
+            ],
+
+        });
+
+    }
+
+</script>
+
+<script>
+    const { createApp, ref } = Vue;
+    const { ElCascader } = ElementPlus;
+    createApp({
+        components: {
+            ElCascader
+        },
+        setup() {
+            const cascader = ref("");
+
+            const options = ref("");
+
+            const get_categorys=async()=>(
+                $.ajax({
+                    url:'/category_all',
+                    type:'post',
+                    success:function (res) {
+                        options.value=res.data
+                    }
+
+                })
+            )
+            get_categorys()
+
+            const  handleCascaderChange=(value)=>{
+                value=value[value.length-1]
+                    $("#add_category").attr("value",value)
+                    $("#update_category").attr("value",value)
+                $("#add_category").prop("selected",true)
+                $("#update_category").prop("selected",true)
+
+            }
+
+            return {
+                cascader,
+                options,
+                handleCascaderChange,
+
+            };
+        }
+    }).mount('#app');
+
+
+
+
+
+</script>
+
+<script th:replace="header :: searchscript"></script>
+
+
+</body>
+</html>

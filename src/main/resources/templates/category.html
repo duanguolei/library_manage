@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>分类</title>
+
+
+    <style>
+
+    </style>
+
+</head>
+
+<body>
+
+<nav th:replace="header :: header"></nav>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        分类管理
+        <a class="btn btn-success btn-sm"  data-toggle="modal" data-target="#addModal" >新建分类</a>
+    </div>
+
+    <div class="panel-body" style="width: 70%;position:absolute;left: 15%">
+
+        <div clsss="panel-heading" style="background-color:rgba(221,217,209,0.25);">
+
+            <i class="fa fa-home" aria-hidden="true"></i>
+            <span><a href="/category">分类</a></span>
+            <span th:each="category,status :${parentCategories}" th:object="${category}">
+
+            <i class="fa fa-caret-right" aria-hidden="true"></i>
+                    <a th:href="'/category/'+*{id}"  th:text="*{name}"></a>
+
+            </span>
+        </div>
+<hr/>
+<table class="table table-hover table-striped" id="category-table">
+    <thead>
+    <tr>
+        <th>序号</th>
+        <th>分类名称</th>
+        <th>相关图书</th>
+
+
+    </tr>
+    <tbody id="category_tbody">
+    <tr th:each="category,status :${bookCategoryList}" th:object="${category}">
+    <td th:text="*{id}"></td>
+    <td ><a th:text="*{name}" th:href="'/category/'+*{id}"></a> </td>
+        <td> <a class="btn btn-primary" th:href="'/book?category='+*{id}" style="height: 32px;text-align: center">相关图书</a></td>
+    </tr>
+
+            </tbody>
+
+
+</table>
+
+    </div>
+</div>
+
+
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">新建分类</h4>
+            </div>
+            <div class="modal-body">
+                <form id="addform">
+                    <div class="form-group">
+                        <label for="categoryname">类别名</label>
+                        <input type="text" class="form-control" id="categoryname" name="categoryname" placeholder="请输入类别名">
+                    </div>
+
+                </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button  class="btn btn-primary" id="addbtn">提交</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $().ready(function() {
+        bindClickSubmit();
+    })
+
+    function bindClickSubmit() {
+
+
+        $("#addbtn").click(function() {
+
+            var name=$("#categoryname").val()
+            if(name)
+            {
+                // alert(name);
+                var data={
+                    name:name
+                };
+                var currentURL = window.location.href;
+
+                var url = new URL(currentURL);
+
+                var lastPathSegment = url.pathname.split('/').pop();
+                if (!isNaN(parseInt(lastPathSegment))) {
+                    url="/category_add/"+lastPathSegment;
+                }
+                else{
+                    url="/category_add";
+                }
+
+                $.ajax({
+                url: url,
+                type: "POST",
+                data: data,
+                dataType: "JSON",
+                success: function(res) {
+                    location.reload();
+                },
+
+            });
+        };
+    })}
+</script>
+
+
+<script th:replace="header :: searchscript"></script>
+
+</body>
+</html>

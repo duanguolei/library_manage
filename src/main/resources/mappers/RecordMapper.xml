@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.library.manage.dao.RecordMapper">
+
+    <insert id="insertrecord" parameterType="Record">
+    insert into record(is_overdue, is_return, return_date, book_id, reader_id,create_time)
+    VALUES (
+        #{isOverdue}, #{isReturn}, #{returnDate}, #{book.id}, #{reader.id} ,#{createTime}
+    )
+</insert>
+    <select id="findallrecord" resultType="com.library.manage.entity.Record">
+        select * from record
+    </select>
+    <select id="findallrecordBybookid" resultType="com.library.manage.entity.Record">
+        select * from record
+        <where>
+            book_id=${id}
+        </where>
+    </select>
+    <select id="findallreaderidbyrecordid" resultType="java.lang.Long">
+        select reader_id from record
+        <where>
+            id=${id}
+        </where>
+    </select>
+    <select id="findallbookidbyrecordid" resultType="java.lang.Long">
+        select book_id from record
+        <where>
+            id=${id}
+        </where>
+
+
+    </select>
+    <select id="findlastmonthrecords" resultType="com.library.manage.entity.Record">
+        select  * from record
+        <where>
+        create_time >= NOW() - INTERVAL 1 month ;
+        </where>
+
+    </select>
+
+
+</mapper>

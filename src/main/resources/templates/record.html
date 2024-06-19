@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>
+        借阅
+    </title>
+
+
+    <style>
+   
+    </style>
+
+</head>
+
+<body>
+<nav th:replace="header :: header"></nav>
+
+<div class="panel panel-default">
+    <div class="panel-heading">借阅记录管理</div>
+    <div class="panel-body">
+
+        <table id="record_table">
+
+        </table>
+
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width: 30%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">还书</h4>
+            </div>
+
+            <div class="modal-footer">
+
+                <div class="btn btn-primary right" id="select_btn">确认还书</div>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="puinshModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width: 60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">罚款单</h4>
+                <form id="punish_form" class="form-horizontal hide">
+                    <div class="form-group">
+                        <label for="punish_money" class="control-label col-sm-2">罚款金额</label>
+                             <div class="col-sm-10">
+                        <input type="number" class="form-control" id="punish_money" name="punish_money" placeholder="请输入罚款金额">
+                             </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="punish_reason" class="control-label col-sm-2">罚款原因</label>
+                        <div class="col-sm-10">
+                        <input type="text" class="form-control" id="punish_reason" name="punish_reason" placeholder="请输入罚款原因">
+                        </div>
+                    </div>
+
+                    <div class="btn btn-primary" id="punish_submit_btn">生成罚款单</div>
+                </form>
+
+                <iframe style="width: 100%;height: 750px" id="punish_iframe" class="ifram hide"></iframe>
+            </div>
+                <div class="modal-footer">
+                    <div class="btn btn-primary right" id="print_punish_btn">打印</div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    $(document).ready(function() {
+
+
+        inittablecordlist();
+        initbookretrn();
+        initpunishiprintbtn()
+        inintpunish_submit_btn()
+    });
+    var record_id;
+
+    function   inintpunish_submit_btn() {
+        $("#punish_submit_btn").click(function () {
+            var punishData = {
+                money: $('#punish_money').val(),
+                reason: $('#punish_reason').val(),
+                record_id:record_id
+            };
+            var url='/punish_submit?'+$.param(punishData);
+                $.ajax({
+                    url:url,
+                    type:'post',
+
+                    success:function (res) {
+                        if(res.status){
+                            $("#punish_form").addClass("hide");
+                            $("#punish_iframe").removeClass("hide");
+                            $("#punish_iframe").attr("src","/punish?record_id="+record_id);
+                        }
+                        else {
+                            alert("生成罚单失败")
+                        }
+                    }
+
+                })
+        })
+
+    }
+
+    function initbookretrn(){
+        $("#select_btn").click(function () {
+            var url='/book_return?recordid='+record_id;
+            $.ajax({
+                url:url,
+                type:'POST',
+                success:function (res) {
+                    if(res.status){
+                        location.reload();
+                    }
+            }}
+            )
+
+        })
+    }
+
+    function initpunishiprintbtn() {
+            $("#print_punish_btn").click(
+                function () {
+                    var iframe = document.getElementById('punish_iframe');
+                    var iframeWindow = iframe.contentWindow || iframe;
+                    iframeWindow.focus();
+                    iframeWindow.print();
+
+                }
+            )
+
+
+    }
+
+
+    // 格式化日期函数
+    function formatDate(isoDateString) {
+        if(isoDateString){
+        var date=new Date(isoDateString);
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        var houer=String(date.getHours()).padStart(2,'0');
+        var min=String(date.getMinutes()).padStart(2,'0');
+
+        return year + '-' + month + '-' + day + " " +houer+":"+min;}
+        else {
+            return ''
+        }
+    }
+
+    function   inittablecordlist() {
+        url=window.document.location.href;
+
+        window.operateEvents = {
+            "click #return_book_btn":function (e,value,row,index) {
+                record_id=row.id;
+            },
+            "click #punish_btn":function (e,value,row,index) {
+                record_id=row.id;
+                url='/punish_search?record_id='+record_id;
+                    $.ajax({
+                        url:url,
+                        type:'POST',
+                        success:function (res) {
+                            if(res.status){
+                                $("#punish_form").addClass("hide");
+                                $("#punish_iframe").removeClass("hide");
+                                $("#punish_iframe").attr("src","/punish?record_id="+record_id);
+
+                            }
+                            else {
+                                    $("#punish_form").removeClass("hide");
+                                    $("#punish_iframe").addClass("hide");
+                                    $("#punish_iframe").attr("src","");
+
+                            }
+                        }
+                    })
+
+        },
+            "click .delete":function (e,value,row,index) {
+                var url='/record_delete?record_id='+row.id;
+                result=confirm("确认删除？")
+                if(result){
+                    $.ajax({
+                        url:url,
+                        type:"post",
+                        success:function (res) {
+                            if(res.status){
+                                location.reload()
+                            }
+                            else {
+                                alert("删除错误")
+                            }
+
+                        }
+                    })
+            }}
+
+        };
+
+        $('#record_table').bootstrapTable({
+            url: url,         //请求后台的 URL（*）
+            method: 'post',                      //请求方式（*）
+
+            toolbar: '#toolbar',                //工具按钮用哪个容器
+            sidePagination:'client',//server:服务器端分页|client：前端分页
+            responseHandler: function (res) {
+                // 处理响应数据格式
+                return {
+                    rows: res.data // 数据行
+                };
+            },
+
+            striped: true,                      //是否显示行间隔色
+            cache: true,                       //是否使用缓存，默认为 true，所以一般情况下需要设置一下这个属性（*）
+            pagination: true,                   //是否显示分页（*）
+            sortable: false,                    //是否启用排序
+            sortOrder: "desc",                   //排序方式
+
+            pageNumber:1,                       //初始化加载第一页，默认第一页
+            pageSize: 20,                        //每页的记录行数（*）
+            pageList: [20],        //可供选择的每页的行数（*）
+            search: true,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以个人感觉意义不大
+            strictSearch: true,                 //启用严格搜索。禁用比较检查。
+            showColumns: true,                  //是否显示所有的列
+            showRefresh: true,                  //是否显示刷新按钮
+            minimumCountColumns: 2,             //最少允许的列数
+            clickToSelect: true,                //是否启用点击选中行
+            height: 700,                        //行高，如果没有设置 height 属性，表格自动根据记录条数觉得表格高度
+            uniqueId: "ID",                     //每一行的唯一标识，一般为主键列
+            showToggle:true,                    //是否显示详细视图和列表视图的切换按钮
+            cardView: false,                    //是否显示详细视图
+            detailView: false,                  //是否显示父子表
+            showExport: true,                   //是否显示导出
+            exportDataType: "basic",            //basic', 'all', 'selected'.
+            columns: [{
+                checkbox: true     //复选框标题，就是我们看到可以通过复选框选择整行。
+            },
+                {
+                    field: 'id',
+                    title: 'ID',
+
+                },
+                {
+                    field: 'book.title',
+                    title: '图书',
+                    formatter: function(value, row, index) {
+                        return '<a target="_blank" href="/book_detail/' + row.book.id + '">' + value + '</a>'
+                    }
+                },
+                {
+                    field: 'reader.name',
+                    title: '读者'
+                },
+                {
+                    field: 'reader.studentId',
+                    title: '学号'
+                },
+                {
+                    field: "createTime",
+                    title: "借阅时间",
+                    formatter:function ( value,row,index) {
+                        return formatDate(row.createTime);
+
+                    }
+                },
+                {
+                    field: 'returnDate',
+                    title: '约定归还时间'
+                },
+                {
+                    field: 'actualReturnDate',
+                    title: '实际归还时间',
+                    formatter:function ( value,row,index) {
+                        return formatDate(value);
+                    }
+                },
+                {
+                    field: 'overdue',
+                    title: '是否逾期',
+                    formatter:function (value,row,index) {
+                        if(value){
+                            return '<span class="label label-danger">已逾期</span>'
+                        }
+                        else {
+                            return '<span class="label label-primary">未逾期</span>'
+                        }
+                    }
+                },
+
+                {
+                    field: 'return',
+                    title: '是否归还',
+                    formatter:function (value,row,index) {
+                    if(value){
+                        return '<span class="label label-success">已归还</span>';
+                    }
+                    else {
+                        return '<span class="label label-info">未归还</span>';
+                    }
+                    }
+                },
+
+                {
+                    field: 'Button',title:"还书",align: 'center',events: operateEvents,formatter:function(value,row,index){
+                        if(row.return){
+                            return ""
+                        }
+                        else {
+                            var btn = '<button type="button"  class="btn btn-success" style="margin: 5px" id="return_book_btn" data-toggle="modal" data-target="#returnModal" >还书</button>'
+                            return [btn]
+                        }
+
+
+                    }
+                },
+
+                {
+                    field: 'Button3',title:"操作",align: 'center',events: operateEvents,formatter:function(value,row,index){
+                        if(row.overdue){
+                            var btn = '<button type="button"  class="btn btn-danger" style="margin: 5px" id="punish_btn" data-target="#puinshModal" data-toggle="modal">罚款</button>';
+                            var del = '<button type="button"  class="btn btn-info delete" style="margin: 5px">删除</button>';
+                            return [btn,del]
+                        }
+                        else {
+                            var del = '<button type="button"  class="btn btn-info delete" style="margin: 5px">删除</button>';
+                             return [del,]
+                        }
+
+
+                    }
+                }
+            ]
+
+        });
+
+    }
+
+</script>
+
+
+<script th:replace="header :: searchscript"></script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title,style)">
+    <meta charset="UTF-8">
+    <title th:replace="${title}">header</title>
+    <script src="https://code.hcharts.cn/highcharts/themes/sand-signika.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.13.1/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highcharts/9.3.1/css/highcharts.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/9.3.1/highcharts.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.13.1/bootstrap-table.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.13.1/locale/bootstrap-table-zh-CN.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+
+<style th:replace="${style}">
+    a {
+        text-decoration: none;
+    }
+
+
+</style>
+
+</head>
+<body>
+
+<nav th:fragment="header" class="navbar navbar-default" style="background-color: rgba(187,192,184,0.53);margin-top: 0px;width: 100%;border: 0px;opacity: 0.7;color: black">
+    <div class="navbar-header">
+        <div class="navbar-brand"  style="text-align: center;color: black;font-size: 30px"><a href="/" style="color: black;text-decoration:none">图书借阅管理系统</a>
+        </div>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul th:if="${session.user!=null}" class="nav navbar-nav">
+
+                <li><a href="/">首页</a></li>
+                <li><a href="/category">分类</a></li>
+                <li><a href="/book">图书管理</a></li>
+                <li><a href="/reader">读者管理</a></li>
+                <li><a href="/record">借阅管理</a> </li>
+            </ul>
+            <form th:if="${session.user!=null}" class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" id='searchinput'  name="search_text" class="form-control"  placeholder="书名、读者、作者、ISBN、出版社、学号、电话号码等" autocomplete="off">
+                </div>
+                <div  class="btn btn-default" id="searchbutton"> <i class="fa fa-search" aria-hidden="true"></i> </div>
+            </form>
+
+
+        <ul class="nav navbar-nav navbar-right" style="float: right">
+
+            <li class="dropdown" th:if="${session.user!=null}">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                   aria-expanded="false">
+                    <div class="avatar" style="text-align: center;font-size:24px;width: 25px;height: 25px;border-radius: 50%;background-color: rgba(29,113,205,0.96); color: black;" th:text="${#strings.substring(session.user.username, 0, 1)}">
+
+                    </div>
+
+
+                <ul class="dropdown-menu">
+                    <li >
+                        <a href="logout"><i class="fa fa-lock" aria-hidden="true"></i>退出</a></li>
+
+                    <li >
+                </ul>
+
+
+            <li th:if="${session.user==null}"> <a href='/login'>登 录</a></li>
+            <li th:if="${session.user==null}"> <a href='/register'>注 册</a></li>
+
+        </ul>
+
+    </div>
+</nav>
+
+<script th:fragment="searchscript">
+    $().ready(function () {
+        initseach();
+    })
+
+    function initseach() {
+
+        $("#searchbutton").click(function () {
+          var keyword=$("#searchinput").val();
+          if(keyword){
+              $.ajax({
+                  url:"/search?keyword="+keyword,
+                  type:"post",
+                  success:function (res) {
+                      if(res.status){
+                          window.location.href=res.data;
+                      }
+                      else {
+                          alert("");
+                      }
+                  }
+              })
+          }
+
+        })
+
+
+    }
+</script>
+
+</body>
+</html>

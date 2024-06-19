@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="header :: head(~{::title},~{::style})">
+    <title>主页面板</title>
+
+    <style>
+
+    </style>
+
+</head>
+
+<body>
+
+<nav th:replace="header :: header"></nav>
+
+
+<div class="row">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-bar-chart" aria-hidden="true"></i>
+            数量情况
+        </div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-primary text-white">
+                            图书数量
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title">[[${bookCount}]]</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-success text-white">
+                            读者数量
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title">[[${readerCount}]]</h1>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-info text-white">
+                            借阅总数
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title">[[${recordCount}]]</h1>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header bg-danger text-white">
+                            罚单数量
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title">[[${puninshCount}]]</h1>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid" style="margin-top: 20px">
+
+        <div class="col-md-6">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    图书借阅热度图
+                </div>
+                <div class="panel-body">
+                    <div id="book_hote_ranking" style="min-width:400px;height:400px"></div>
+
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    借阅数量趋势图
+                </div>
+                <div class="panel-body">
+                    <div id="rend_chart" style="min-width:400px;height:400px"></div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    图书借阅逾期比例图
+                </div>
+                <div class="panel-body">
+                    <div id="book_overdue_pie" style="min-width:400px;height:400px"></div>
+                </div>
+            </div>
+
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    借阅读者排名
+                </div>
+                <div class="panel-body">
+                    <div style="min-width:200px;min-height:400px">
+                        <table class="table table-hover" style="height: auto">
+                            <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>读者</th>
+                                <th>学号</th>
+                                <th>借阅次数</th>
+                            </tr>
+                            </thead>
+                            <tbody id="reader_rank_tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+
+
+
+<script>
+    $(function(){
+        init_bookrankingchart()
+        init_bookOverduepiechart()
+        init_reader_rank_tbody()
+        init_borrow_trend_chart()
+
+    })
+
+
+    function init_borrow_trend_chart() {
+
+        var line_congfig ={
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: '借阅数量趋势'
+            },
+            subtitle: {
+                text: ''
+            },
+            credits:{
+                enabled:false
+            },
+            xAxis: {
+                categories: []
+            },
+            yAxis: {
+                title: {
+                    text: '借阅量'
+                }
+            },
+            plotOptions: {
+                cursor: 'pointer',
+                point: {
+                    events: {
+                        click: function (e) {
+                            $('.message').html( this.x + ':<br/>  借阅量：' +this.y);
+                        }
+                },
+                line: {
+                    dataLabels: {
+                        // 开启数据标签
+                        enabled: true
+                    },
+                    // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+                    enableMouseTracking: false
+                }
+            }},
+            series: [{
+                name: '东京',
+                data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+            }]
+        }
+            $.ajax({
+                url:"/borrow_trend",
+                type:'post',
+                success:function (res) {
+                    if(res.status){
+                        line_congfig.xAxis.categories=res.categories;
+                        line_congfig.series[0].data=res.values;
+                        line_congfig.series[0].name="借阅数量";
+                        Highcharts.chart("rend_chart",line_congfig);
+                    }
+
+                }
+
+
+            })
+
+    }
+
+    function init_bookrankingchart() {
+        var chartconfig={
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: '图书借阅热度(top10)',
+                align: 'left'
+            },
+
+            xAxis: {
+
+                title: {
+                    text: "书名"
+                },
+                gridLineWidth: 1,
+                lineWidth: 0
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '借阅次数',
+                    align: 'right'
+                },
+                labels: {
+                    overflow: 'justify'
+                },
+                gridLineWidth: 0
+            },
+
+            plotOptions: {
+                bar: {dataLabels: {
+            enabled: true
+        },
+        groupPadding: 0.1
+    }
+    },
+        legend: {
+            layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                x: -40,
+                y: 10,
+                floating: true,
+                borderWidth: 1,
+                backgroundColor:
+            Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+                shadow: true
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            name: '热度',
+        }
+        ]
+    };
+
+        $.ajax({
+            url:'/book_ranking',
+            type: "POST",
+            success:function (res) {
+                if(res.status){
+                    chartconfig.xAxis.categories=res.categories;
+                    chartconfig.series[0].data=res.values;
+                    chartconfig.series[0].name="借阅次数";
+                    Highcharts.chart("book_hote_ranking",chartconfig);
+                }
+
+            }
+        })
+
+    }
+
+    function init_bookOverduepiechart() {
+
+        var pieconfig= {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: ''
+            },
+            credits: {
+                enabled:false
+            },
+
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: '比例',
+                colorByPoint: true,
+                data: []
+            }]
+        };
+
+        $.ajax({
+            url:"/record_overdue_rate",
+            type: "POST",
+            success:function (res) {
+                if(res.status){
+                    pieconfig.series[0].data=res.data;
+                    Highcharts.chart("book_overdue_pie",pieconfig);
+                }}
+        })
+    }
+
+    function init_reader_rank_tbody() {
+        var tbody=$("#reader_rank_tbody");
+        tbody.empty();
+        $.ajax({
+            url:"/reader_rank",
+            type:"post",
+            success:function (res) {
+                if(res.status){
+                    var html="";
+                    data=res.data;
+                    for(var i=0;i<data.length;i++){
+                        html+="<tr>"
+                        html+="<td>"+(i+1)+"</td>"
+                        html+="<td>"+data[i].name+"</td>"
+                        html+="<td>"+data[i].studentId+"</td>"
+                        html+="<td>"+data[i].borrowCount+"</td>"
+                        html+="</tr>"
+                    }
+                    tbody.html(html);
+
+                }
+
+            }
+        })
+
+    }
+
+
+
+
+
+</script>
+
+
+<script th:replace="header :: searchscript"></script>
+</body>
+</html>
