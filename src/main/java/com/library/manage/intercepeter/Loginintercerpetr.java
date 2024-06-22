@@ -20,7 +20,7 @@ public class Loginintercerpetr implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String requestURI = request.getRequestURI();
 
-        if (requestURI.equals("/login") || requestURI.equals("/register")) {
+        if (requestURI.equals("/login") || requestURI.equals("/register") || requestURI.startsWith("/js") || requestURI.startsWith("/css")) {
             return true;
         }
 
